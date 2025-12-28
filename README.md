@@ -23,13 +23,15 @@ Rather than re-inventing the wheel and creating a way to fix embeds on Discord f
 
 Post a link from Twitter/X, TikTok, Instagram (reels/posts), or Reddit — Embe Bot detects it, replies with the fixed embed link, and suppresses the original broken embed.
 
-## Slash Commands -- saved per server 
+## Slash Commands -- saved per server
 
 | Command | Description |
 |---------|-------------|
 | `/enable <service>` | Enable a service (twitter, x, tiktok, instagram, reddit, or all) |
 | `/disable <service>` | Disable a service |
-| `/settings` | View current enabled/disabled services for your server |
+| `/settings` | View current enabled/disabled services and endpoints |
+| `/endpoint set <service> <url>` | Set a custom endpoint (e.g., `fxtwitter.com`) |
+| `/endpoint reset <service>` | Reset a service to its default endpoint |
 
 ## Self-Hosting
 

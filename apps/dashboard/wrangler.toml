@@ -1,0 +1,23 @@
+name = "embebot-dashboard"
+main = ".svelte-kit/cloudflare/_worker.js"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+binding = "ASSETS"
+directory = ".svelte-kit/cloudflare"
+
+# Custom domain
+[[routes]]
+pattern = "dashboard.embebot.orion-server.cloud"
+custom_domain = true
+
+# Environment variables (non-secret)
+[vars]
+DISCORD_API_VERSION = "10"
+
+# Secrets (set via wrangler secret put):
+# - DISCORD_CLIENT_ID
+# - DISCORD_CLIENT_SECRET
+# - JWT_SECRET
+# - DATABASE_URL
