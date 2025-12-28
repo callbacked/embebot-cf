@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 
 	let { data, form } = $props();
 
@@ -59,6 +60,8 @@
 			saving = true;
 			return async ({ update }) => {
 				await update();
+				await invalidateAll();
+				endpointOverrides = {};
 				saving = false;
 			};
 		}}

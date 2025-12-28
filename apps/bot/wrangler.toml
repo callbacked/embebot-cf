@@ -23,7 +23,7 @@ DISCORD_API_VERSION = "10"
 
 # Custom domain
 [[routes]]
-pattern = "embebot.orion-server.cloud"
+pattern = "embe-worker.autorun.sh"
 custom_domain = true
 
 # Cron trigger to check gateway connection every minute
