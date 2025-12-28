@@ -1,6 +1,5 @@
-import { eq } from 'drizzle-orm'
 import type { Env } from '../types'
-import { getDb, schema } from '../db'
+import { eq, getDb, schema } from '@embebot/db'
 import { ALL_SERVICES } from './url-matcher'
 
 // Column mapping for services (enabled/disabled)
@@ -27,7 +26,7 @@ export async function getGuildSettings(
   env: Env,
   guildId: string
 ): Promise<Record<string, boolean>> {
-  const db = getDb(env)
+  const db = getDb(env.DATABASE_URL)
   const result = await db
     .select()
     .from(schema.serverSettings)
@@ -71,7 +70,7 @@ export async function setServiceEnabled(
   serviceName: string,
   enabled: boolean
 ): Promise<void> {
-  const db = getDb(env)
+  const db = getDb(env.DATABASE_URL)
   const disabled = !enabled
 
   if (!(serviceName in serviceColumns)) {
@@ -92,7 +91,7 @@ export async function setAllServicesEnabled(
   guildId: string,
   enabled: boolean
 ): Promise<void> {
-  const db = getDb(env)
+  const db = getDb(env.DATABASE_URL)
   const disabled = !enabled
 
   const values: Record<string, boolean> = {}
