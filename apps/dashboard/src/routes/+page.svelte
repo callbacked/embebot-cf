@@ -15,16 +15,26 @@
 	let typedDomain = $state('');
 	let showUserMsg = $state(false);
 	let showBotMsg = $state(false);
+	let typingInterval: ReturnType<typeof setInterval> | null = null;
 
 	function typeText(text: string, onComplete: () => void) {
+		// Clear any existing typing animation
+		if (typingInterval) {
+			clearInterval(typingInterval);
+			typingInterval = null;
+		}
+
 		typedDomain = '';
 		let i = 0;
-		const interval = setInterval(() => {
+		typingInterval = setInterval(() => {
 			if (i < text.length) {
 				typedDomain += text[i];
 				i++;
 			} else {
-				clearInterval(interval);
+				if (typingInterval) {
+					clearInterval(typingInterval);
+					typingInterval = null;
+				}
 				onComplete();
 			}
 		}, 50);
@@ -54,7 +64,12 @@
 			}, 400);
 		}, 4000);
 
-		return () => clearInterval(interval);
+		return () => {
+			clearInterval(interval);
+			if (typingInterval) {
+				clearInterval(typingInterval);
+			}
+		};
 	});
 </script>
 
