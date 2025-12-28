@@ -99,7 +99,7 @@ function isBuiltinDomain(domain: string): boolean {
 }
 
 export const actions: Actions = {
-	default: async ({ request, params, platform, locals }) => {
+	saveSettings: async ({ request, params, platform, locals }) => {
 		if (!locals.user) {
 			error(401, 'Unauthorized')
 		}
