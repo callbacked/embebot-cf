@@ -79,10 +79,11 @@
 
 	<form
 		method="POST"
+		action="?/saveSettings"
 		use:enhance={() => {
 			saving = true;
 			return async ({ update }) => {
-				await update();
+				await update({ reset: false });
 				await invalidateAll();
 				endpointOverrides = {};
 				saving = false;
@@ -573,6 +574,18 @@
 		align-items: center;
 		gap: 0.5rem;
 		margin-bottom: 0.75rem;
+		flex-wrap: wrap;
+	}
+
+	@media (max-width: 500px) {
+		.add-custom-inputs {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.add-custom-inputs .add-arrow {
+			text-align: center;
+		}
 	}
 
 	.custom-input {
