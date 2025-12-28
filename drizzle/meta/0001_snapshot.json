@@ -1,0 +1,103 @@
+{
+  "id": "89c8e87a-b019-4a8b-8ff1-b081b0cbba49",
+  "prevId": "1888b76b-4c22-4aee-856e-166cbce969fc",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.server_settings": {
+      "name": "server_settings",
+      "schema": "",
+      "columns": {
+        "guild_id": {
+          "name": "guild_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "twitter": {
+          "name": "twitter",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "x": {
+          "name": "x",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "tiktok": {
+          "name": "tiktok",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "instagram": {
+          "name": "instagram",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "reddit": {
+          "name": "reddit",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "twitter_endpoint": {
+          "name": "twitter_endpoint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "x_endpoint": {
+          "name": "x_endpoint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tiktok_endpoint": {
+          "name": "tiktok_endpoint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "instagram_endpoint": {
+          "name": "instagram_endpoint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reddit_endpoint": {
+          "name": "reddit_endpoint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
