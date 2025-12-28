@@ -1,0 +1,37 @@
+name = "embebot"
+main = "src/index.ts"
+compatibility_date = "2024-12-18"
+compatibility_flags = ["nodejs_compat"]
+
+# Enable observability for logs
+[observability]
+enabled = true
+
+# Durable Object bindings
+[[durable_objects.bindings]]
+name = "GATEWAY"
+class_name = "DiscordGateway"
+
+# Migrations for Durable Objects
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DiscordGateway"]
+
+# Environment variables (non-secret)
+[vars]
+DISCORD_API_VERSION = "10"
+
+# Custom domain
+[[routes]]
+pattern = "embebot.orion-server.cloud"
+custom_domain = true
+
+# Cron trigger to check gateway connection every minute
+[triggers]
+crons = ["* * * * *"]
+
+# Secrets (set via wrangler secret put):
+# - DISCORD_BOT_TOKEN
+# - DISCORD_PUBLIC_KEY
+# - DISCORD_APPLICATION_ID
+# - DATABASE_URL (Neon Postgres connection string)
