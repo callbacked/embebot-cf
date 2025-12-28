@@ -1,3 +1,5 @@
+import type { CustomService } from '@embebot/db'
+
 export interface MatchConfig {
   pattern: RegExp
   baseLink: string
@@ -87,4 +89,37 @@ export function matchUrls(
 
 export function getServiceByName(name: string): MatchConfig | undefined {
   return MATCH_CONFIGS.find((c) => c.serviceName === name)
+}
+
+export function matchCustomUrls(content: string, customServices: CustomService[]): MatchResult[] {
+  const urlRegex = /https?:\/\/[^\s<>]+/g
+  const urls = content.match(urlRegex) || []
+  const results: MatchResult[] = []
+
+  for (const url of urls) {
+    try {
+      const parsed = new URL(url)
+      const hostname = parsed.hostname // already lowercase
+      for (const service of customServices) {
+        if (!service.enabled) continue
+        if (hostname === service.matchDomain || hostname.endsWith('.' + service.matchDomain)) {
+          // Replace hostname case-insensitively, preserve path/query
+          parsed.hostname = parsed.hostname.replace(
+            new RegExp(service.matchDomain.replace(/\./g, '\\.'), 'i'),
+            service.replaceDomain
+          )
+          results.push({
+            original: url,
+            vxUrl: parsed.href,
+            serviceName: `custom:${service.matchDomain}`,
+          })
+          break
+        }
+      }
+    } catch {
+      // Invalid URL, skip
+    }
+  }
+
+  return results
 }

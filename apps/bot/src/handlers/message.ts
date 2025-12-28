@@ -1,8 +1,8 @@
 import type { DurableObjectState } from '@cloudflare/workers-types'
 import type { Env, DiscordMessage } from '../types'
 import { getMessage, sendMessage, suppressEmbeds } from '../services/discord'
-import { getEnabledServices, getCustomEndpoints } from '../services/database'
-import { matchUrls } from '../services/url-matcher'
+import { getEnabledServices, getCustomEndpoints, getCustomServices } from '../services/database'
+import { matchUrls, matchCustomUrls } from '../services/url-matcher'
 
 // Suppression alarm data stored in DO
 interface SuppressionTask {
@@ -19,18 +19,21 @@ export async function handleMessageCreate(
   // Skip DMs
   if (!message.guild_id) return
 
-  // Get enabled services and custom endpoints for this guild
-  const [enabledServices, customEndpoints] = await Promise.all([
+  // Get enabled services, custom endpoints, and custom services for this guild
+  const [enabledServices, customEndpoints, customServices] = await Promise.all([
     getEnabledServices(env, message.guild_id),
     getCustomEndpoints(env, message.guild_id),
+    getCustomServices(env, message.guild_id),
   ])
 
-  if (enabledServices.size === 0) {
-    return
-  }
+  // Match URLs in message content (built-in services)
+  const builtInMatches = matchUrls(message.content, enabledServices, customEndpoints)
 
-  // Match URLs in message content
-  const matches = matchUrls(message.content, enabledServices, customEndpoints)
+  // Match URLs for custom services
+  const customMatches = matchCustomUrls(message.content, customServices)
+
+  // Combine results
+  const matches = [...builtInMatches, ...customMatches]
 
   if (matches.length === 0) {
     return

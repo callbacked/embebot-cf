@@ -1,5 +1,5 @@
 import type { Env } from '../types'
-import { eq, getDb, schema } from '@embebot/db'
+import { eq, and, getDb, schema, type CustomService } from '@embebot/db'
 import { ALL_SERVICES } from './url-matcher'
 
 // Column mapping for services (enabled/disabled)
@@ -175,4 +175,61 @@ export async function resetCustomEndpoint(
       target: schema.serverSettings.guildId,
       set: { [endpointKey]: null },
     })
+}
+
+// Custom services CRUD
+
+export async function getCustomServices(env: Env, guildId: string): Promise<CustomService[]> {
+  const db = getDb(env.DATABASE_URL)
+  return db.select().from(schema.customServices).where(eq(schema.customServices.guildId, guildId))
+}
+
+export async function addCustomService(
+  env: Env,
+  guildId: string,
+  matchDomain: string,
+  replaceDomain: string
+): Promise<void> {
+  const db = getDb(env.DATABASE_URL)
+  await db
+    .insert(schema.customServices)
+    .values({ guildId, matchDomain, replaceDomain, enabled: true })
+    .onConflictDoUpdate({
+      target: [schema.customServices.guildId, schema.customServices.matchDomain],
+      set: { replaceDomain },
+    })
+}
+
+export async function deleteCustomService(
+  env: Env,
+  guildId: string,
+  matchDomain: string
+): Promise<void> {
+  const db = getDb(env.DATABASE_URL)
+  await db
+    .delete(schema.customServices)
+    .where(
+      and(
+        eq(schema.customServices.guildId, guildId),
+        eq(schema.customServices.matchDomain, matchDomain)
+      )
+    )
+}
+
+export async function toggleCustomService(
+  env: Env,
+  guildId: string,
+  matchDomain: string,
+  enabled: boolean
+): Promise<void> {
+  const db = getDb(env.DATABASE_URL)
+  await db
+    .update(schema.customServices)
+    .set({ enabled })
+    .where(
+      and(
+        eq(schema.customServices.guildId, guildId),
+        eq(schema.customServices.matchDomain, matchDomain)
+      )
+    )
 }
