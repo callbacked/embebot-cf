@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "pnpm --filter @embebot/bot dev",
     "dev:dashboard": "pnpm --filter @embebot/dashboard dev",
-    "deploy": "pnpm --filter @embebot/bot deploy",
-    "deploy:dashboard": "pnpm --filter @embebot/dashboard deploy",
+    "deploy:bot": "pnpm --filter @embebot/bot cf:deploy",
+    "deploy:dashboard": "pnpm --filter @embebot/dashboard cf:deploy",
     "check": "pnpm -r check",
     "lint": "pnpm -r lint",
     "fix": "pnpm -r fix"
