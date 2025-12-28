@@ -1,7 +1,7 @@
 import type { DurableObjectState } from '@cloudflare/workers-types'
 import type { Env, DiscordMessage } from '../types'
 import { getMessage, sendMessage, suppressEmbeds } from '../services/discord'
-import { getEnabledServices } from '../services/database'
+import { getEnabledServices, getCustomEndpoints } from '../services/database'
 import { matchUrls } from '../services/url-matcher'
 
 // Suppression alarm data stored in DO
@@ -19,15 +19,18 @@ export async function handleMessageCreate(
   // Skip DMs
   if (!message.guild_id) return
 
-  // Get enabled services for this guild
-  const enabledServices = await getEnabledServices(env, message.guild_id)
+  // Get enabled services and custom endpoints for this guild
+  const [enabledServices, customEndpoints] = await Promise.all([
+    getEnabledServices(env, message.guild_id),
+    getCustomEndpoints(env, message.guild_id),
+  ])
 
   if (enabledServices.size === 0) {
     return
   }
 
   // Match URLs in message content
-  const matches = matchUrls(message.content, enabledServices)
+  const matches = matchUrls(message.content, enabledServices, customEndpoints)
 
   if (matches.length === 0) {
     return

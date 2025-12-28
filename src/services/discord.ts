@@ -126,6 +126,46 @@ export async function registerCommands(env: Env): Promise<void> {
       name: 'settings',
       description: 'Shows the current embed settings for this server',
     },
+    {
+      name: 'endpoint',
+      description: 'Configure custom embed endpoints',
+      options: [
+        {
+          type: 1, // SUB_COMMAND
+          name: 'set',
+          description: 'Set a custom endpoint for a service',
+          options: [
+            {
+              type: 3, // STRING
+              name: 'service',
+              description: 'Service to configure',
+              required: true,
+              autocomplete: true,
+            },
+            {
+              type: 3, // STRING
+              name: 'url',
+              description: 'Custom endpoint domain (e.g., fxtwitter.com)',
+              required: true,
+            },
+          ],
+        },
+        {
+          type: 1, // SUB_COMMAND
+          name: 'reset',
+          description: 'Reset a service to its default endpoint',
+          options: [
+            {
+              type: 3, // STRING
+              name: 'service',
+              description: 'Service to reset',
+              required: true,
+              autocomplete: true,
+            },
+          ],
+        },
+      ],
+    },
   ]
 
   const response = await fetch(

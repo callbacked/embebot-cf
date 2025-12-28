@@ -169,6 +169,7 @@ export interface ApplicationCommandOption {
   type: number
   value?: string | number | boolean
   focused?: boolean
+  options?: ApplicationCommandOption[] // For subcommands
 }
 
 export interface InteractionResponse {

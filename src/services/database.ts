@@ -3,13 +3,22 @@ import type { Env } from '../types'
 import { getDb, schema } from '../db'
 import { ALL_SERVICES } from './url-matcher'
 
-// Column mapping for services
+// Column mapping for services (enabled/disabled)
 const serviceColumns = {
   twitter: schema.serverSettings.twitter,
   x: schema.serverSettings.x,
   tiktok: schema.serverSettings.tiktok,
   instagram: schema.serverSettings.instagram,
   reddit: schema.serverSettings.reddit,
+} as const
+
+// Column mapping for custom endpoints
+const endpointColumns = {
+  twitter: schema.serverSettings.twitterEndpoint,
+  x: schema.serverSettings.xEndpoint,
+  tiktok: schema.serverSettings.tiktokEndpoint,
+  instagram: schema.serverSettings.instagramEndpoint,
+  reddit: schema.serverSettings.redditEndpoint,
 } as const
 
 type ServiceName = keyof typeof serviceColumns
@@ -97,5 +106,74 @@ export async function setAllServicesEnabled(
     .onConflictDoUpdate({
       target: schema.serverSettings.guildId,
       set: values,
+    })
+}
+
+export async function getCustomEndpoints(
+  env: Env,
+  guildId: string
+): Promise<Record<string, string | null>> {
+  const db = getDb(env)
+  const result = await db
+    .select()
+    .from(schema.serverSettings)
+    .where(eq(schema.serverSettings.guildId, guildId))
+    .limit(1)
+
+  if (result.length === 0) {
+    return {}
+  }
+
+  const row = result[0]
+  const endpoints: Record<string, string | null> = {}
+
+  for (const service of ALL_SERVICES) {
+    const endpointKey = `${service}Endpoint` as keyof typeof row
+    endpoints[service] = row[endpointKey] as string | null
+  }
+
+  return endpoints
+}
+
+export async function setCustomEndpoint(
+  env: Env,
+  guildId: string,
+  serviceName: string,
+  endpoint: string
+): Promise<void> {
+  const db = getDb(env)
+  const endpointKey = `${serviceName}Endpoint`
+
+  if (!(serviceName in endpointColumns)) {
+    throw new Error(`Unknown service: ${serviceName}`)
+  }
+
+  await db
+    .insert(schema.serverSettings)
+    .values({ guildId, [endpointKey]: endpoint })
+    .onConflictDoUpdate({
+      target: schema.serverSettings.guildId,
+      set: { [endpointKey]: endpoint },
+    })
+}
+
+export async function resetCustomEndpoint(
+  env: Env,
+  guildId: string,
+  serviceName: string
+): Promise<void> {
+  const db = getDb(env)
+  const endpointKey = `${serviceName}Endpoint`
+
+  if (!(serviceName in endpointColumns)) {
+    throw new Error(`Unknown service: ${serviceName}`)
+  }
+
+  await db
+    .insert(schema.serverSettings)
+    .values({ guildId, [endpointKey]: null })
+    .onConflictDoUpdate({
+      target: schema.serverSettings.guildId,
+      set: { [endpointKey]: null },
     })
 }

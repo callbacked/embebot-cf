@@ -48,7 +48,16 @@ const MATCH_CONFIGS: MatchConfig[] = [
 
 export const ALL_SERVICES = MATCH_CONFIGS.map((c) => c.serviceName)
 
-export function matchUrls(content: string, enabledServices: Set<string>): MatchResult[] {
+// Default endpoints for display in /settings
+export const DEFAULT_ENDPOINTS: Record<string, string> = Object.fromEntries(
+  MATCH_CONFIGS.map((c) => [c.serviceName, c.vxLink])
+)
+
+export function matchUrls(
+  content: string,
+  enabledServices: Set<string>,
+  customEndpoints?: Record<string, string | null>
+): MatchResult[] {
   const results: MatchResult[] = []
 
   for (const config of MATCH_CONFIGS) {
@@ -62,7 +71,9 @@ export function matchUrls(content: string, enabledServices: Set<string>): MatchR
 
     for (const match of matches) {
       const original = match[0]
-      const vxUrl = original.replace(config.baseLink, config.vxLink)
+      // Use custom endpoint if set, otherwise use default
+      const vxLink = customEndpoints?.[config.serviceName] || config.vxLink
+      const vxUrl = original.replace(config.baseLink, vxLink)
       results.push({
         original,
         vxUrl,
