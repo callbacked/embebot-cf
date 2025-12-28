@@ -9,7 +9,7 @@ directory = ".svelte-kit/cloudflare"
 
 # Custom domain
 [[routes]]
-pattern = "dashboard.embebot.orion-server.cloud"
+pattern = "embebot.autorun.sh"
 custom_domain = true
 
 # Environment variables (non-secret)
