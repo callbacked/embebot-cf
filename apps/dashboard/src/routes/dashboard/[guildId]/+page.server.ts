@@ -6,12 +6,19 @@ import { eq } from '@embebot/db'
 const ALL_SERVICES = ['twitter', 'x', 'tiktok', 'instagram', 'reddit'] as const
 type ServiceName = (typeof ALL_SERVICES)[number]
 
+const DEFAULT_ENDPOINTS: Record<ServiceName, string> = {
+	twitter: 'vxtwitter.com',
+	x: 'vxtwitter.com',
+	tiktok: 'vxtiktok.com',
+	instagram: 'ddinstagram.com',
+	reddit: 'vxreddit.com'
+}
+
 export const load: PageServerLoad = async ({ locals, params, platform }) => {
 	if (!locals.user) {
 		redirect(302, '/auth/discord')
 	}
 
-	// Check if user has access to this guild
 	const guild = locals.user.guilds.find((g) => g.id === params.guildId)
 	if (!guild) {
 		error(403, 'You do not have access to this server')
@@ -22,7 +29,6 @@ export const load: PageServerLoad = async ({ locals, params, platform }) => {
 		error(500, 'Database not configured')
 	}
 
-	// Fetch current settings from database
 	const db = getDb(databaseUrl)
 	const result = await db
 		.select()
@@ -30,22 +36,32 @@ export const load: PageServerLoad = async ({ locals, params, platform }) => {
 		.where(eq(schema.serverSettings.guildId, params.guildId))
 		.limit(1)
 
-	// Build settings object (false = enabled, true = disabled in DB)
 	const settings: Record<string, boolean> = {}
+	const endpoints: Record<string, string> = {}
+
 	for (const service of ALL_SERVICES) {
-		// Default is enabled (false in DB means not disabled)
 		settings[service] = true
+		endpoints[service] = DEFAULT_ENDPOINTS[service]
+
 		if (result.length > 0) {
 			const row = result[0]
 			const value = row[service as ServiceName]
-			// If DB value is true, service is disabled
 			settings[service] = value !== true
+
+			// Get custom endpoint if set
+			const endpointKey = `${service}Endpoint` as keyof typeof row
+			const customEndpoint = row[endpointKey]
+			if (customEndpoint && typeof customEndpoint === 'string') {
+				endpoints[service] = customEndpoint
+			}
 		}
 	}
 
 	return {
 		guild,
-		settings
+		settings,
+		endpoints,
+		defaults: DEFAULT_ENDPOINTS
 	}
 }
 
@@ -55,7 +71,6 @@ export const actions: Actions = {
 			error(401, 'Unauthorized')
 		}
 
-		// Verify access
 		const guild = locals.user.guilds.find((g) => g.id === params.guildId)
 		if (!guild) {
 			error(403, 'You do not have access to this server')
@@ -69,12 +84,21 @@ export const actions: Actions = {
 		const formData = await request.formData()
 		const db = getDb(databaseUrl)
 
-		// Build the values object - checkboxes only send value if checked
-		const values: Record<string, boolean> = {}
+		const values: Record<string, boolean | string | null> = {}
+
 		for (const service of ALL_SERVICES) {
-			// If checkbox is checked, service is enabled (store false)
-			// If checkbox is not checked, service is disabled (store true)
+			// Service enabled/disabled
 			values[service] = !formData.has(service)
+
+			// Custom endpoint (null if empty or same as default)
+			const endpoint = formData.get(`${service}Endpoint`)?.toString().trim() || null
+			const endpointKey = `${service}Endpoint`
+
+			if (endpoint && endpoint !== DEFAULT_ENDPOINTS[service]) {
+				values[endpointKey] = endpoint
+			} else {
+				values[endpointKey] = null
+			}
 		}
 
 		await db

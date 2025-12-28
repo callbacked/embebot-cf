@@ -4,7 +4,7 @@ import * as schema from './schema'
 
 export { schema }
 export * from './schema'
-export { eq } from 'drizzle-orm'
+export { eq, inArray } from 'drizzle-orm'
 
 export function getDb(databaseUrl: string) {
   const sql = neon(databaseUrl)

@@ -3,12 +3,12 @@
 
 	let { data, form } = $props();
 
-	const services = [
-		{ id: 'twitter', name: 'Twitter', description: 'twitter.com → vxtwitter.com' },
-		{ id: 'x', name: 'X', description: 'x.com → vxtwitter.com' },
-		{ id: 'tiktok', name: 'TikTok', description: 'tiktok.com → vxtiktok.com' },
-		{ id: 'instagram', name: 'Instagram', description: 'instagram.com → ddinstagram.com' },
-		{ id: 'reddit', name: 'Reddit', description: 'reddit.com → vxreddit.com' }
+	const services: Array<{ id: keyof typeof data.defaults; name: string; source: string }> = [
+		{ id: 'twitter', name: 'twitter', source: 'twitter.com' },
+		{ id: 'x', name: 'x', source: 'x.com' },
+		{ id: 'tiktok', name: 'tiktok', source: 'tiktok.com' },
+		{ id: 'instagram', name: 'instagram', source: 'instagram.com' },
+		{ id: 'reddit', name: 'reddit', source: 'reddit.com' }
 	];
 
 	function getIconUrl(guildId: string, icon: string | null): string {
@@ -19,74 +19,99 @@
 	}
 
 	let saving = $state(false);
+
+	// Track endpoint values for reset functionality
+	let endpoints = $state({ ...data.endpoints });
+
+	function resetEndpoint(serviceId: keyof typeof data.defaults) {
+		endpoints[serviceId] = data.defaults[serviceId];
+	}
+
+	function isCustom(serviceId: keyof typeof data.defaults): boolean {
+		return endpoints[serviceId] !== data.defaults[serviceId] && endpoints[serviceId] !== '';
+	}
 </script>
 
-<div class="header">
-	<a href="/dashboard" class="back">← Back to servers</a>
+<div class="page">
+	<a href="/dashboard" class="back">← servers</a>
+
 	<div class="guild-header">
 		<img src={getIconUrl(data.guild.id, data.guild.icon)} alt={data.guild.name} class="guild-icon" />
-		<div>
-			<h1>{data.guild.name}</h1>
-			<p class="guild-id">{data.guild.id}</p>
-		</div>
+		<span class="guild-name">{data.guild.name}</span>
 	</div>
+
+	{#if form?.success}
+		<div class="success">saved</div>
+	{/if}
+
+	<form
+		method="POST"
+		use:enhance={() => {
+			saving = true;
+			return async ({ update }) => {
+				await update();
+				saving = false;
+			};
+		}}
+	>
+		<div class="services">
+			{#each services as service, i}
+				<div class="service-row" style="animation-delay: {i * 0.04}s">
+					<label class="service-toggle">
+						<div class="service-info">
+							<span class="service-name">{service.name}</span>
+							<span class="service-transform">{service.source} →</span>
+						</div>
+						<input
+							type="checkbox"
+							name={service.id}
+							checked={data.settings[service.id]}
+						/>
+						<span class="toggle"></span>
+					</label>
+					<div class="endpoint-row">
+						<input
+							type="text"
+							name="{service.id}Endpoint"
+							bind:value={endpoints[service.id]}
+							placeholder={data.defaults[service.id]}
+							class="endpoint-input"
+						/>
+						{#if isCustom(service.id)}
+							<button
+								type="button"
+								class="reset-btn"
+								onclick={() => resetEndpoint(service.id)}
+								title="reset to default"
+							>
+								×
+							</button>
+						{/if}
+					</div>
+				</div>
+			{/each}
+		</div>
+
+		<button type="submit" class="save-btn" disabled={saving}>
+			{saving ? 'saving...' : 'save'}
+		</button>
+	</form>
 </div>
 
-{#if form?.success}
-	<div class="success">Settings saved</div>
-{/if}
-
-<form
-	method="POST"
-	use:enhance={() => {
-		saving = true;
-		return async ({ update }) => {
-			await update();
-			saving = false;
-		};
-	}}
->
-	<div class="services">
-		<div class="section-header">
-			<h2>Services</h2>
-			<p>Toggle which embed services are active</p>
-		</div>
-
-		{#each services as service, i}
-			<label class="service-toggle" style="animation-delay: {i * 0.05}s">
-				<div class="service-info">
-					<span class="service-name">{service.name}</span>
-					<span class="service-desc">{service.description}</span>
-				</div>
-				<input
-					type="checkbox"
-					name={service.id}
-					checked={data.settings[service.id]}
-				/>
-				<span class="toggle">
-					<span class="toggle-label">{data.settings[service.id] ? 'ON' : 'OFF'}</span>
-				</span>
-			</label>
-		{/each}
-	</div>
-
-	<button type="submit" class="save-btn" disabled={saving}>
-		{saving ? 'Saving...' : 'Save Settings'}
-	</button>
-</form>
-
 <style>
-	.header {
-		margin-bottom: 3rem;
+	.page {
+		max-width: 500px;
+		margin: 0 auto;
+		padding-top: 2rem;
 	}
 
 	.back {
-		font-size: 0.7rem;
+		display: inline-block;
+		font-size: 0.75rem;
 		color: var(--fg-dim);
 		text-decoration: none;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		transition: color 0.2s;
+		margin-bottom: 2rem;
+		transition: color 0.2s ease;
 	}
 
 	.back:hover {
@@ -96,82 +121,50 @@
 	.guild-header {
 		display: flex;
 		align-items: center;
-		gap: 1.25rem;
-		margin-top: 1.5rem;
+		gap: 1rem;
+		margin-bottom: 2rem;
 	}
 
 	.guild-icon {
-		width: 64px;
-		height: 64px;
-		border-radius: 16px;
+		width: 48px;
+		height: 48px;
+		border-radius: 12px;
 		background: rgba(255, 255, 255, 0.05);
 	}
 
-	h1 {
-		font-family: 'Instrument Serif', serif;
-		font-size: 1.75rem;
-		font-weight: 400;
-		margin: 0 0 0.25rem;
-	}
-
-	.guild-id {
-		font-size: 0.7rem;
-		color: var(--fg-dim);
-		margin: 0;
-		opacity: 0.6;
+	.guild-name {
+		font-size: 1.1rem;
 	}
 
 	.success {
 		background: rgba(34, 197, 94, 0.1);
 		border: 1px solid rgba(34, 197, 94, 0.2);
 		color: #22c55e;
-		padding: 1rem 1.25rem;
+		padding: 0.75rem 1rem;
 		margin-bottom: 1.5rem;
-		font-size: 0.8rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
+		font-size: 0.75rem;
+		border-radius: 6px;
 	}
 
 	.services {
-		background: rgba(255, 255, 255, 0.02);
-		border: 1px solid rgba(255, 255, 255, 0.06);
-		padding: 1.5rem;
-	}
-
-	.section-header {
-		margin-bottom: 1.5rem;
-		padding-bottom: 1.5rem;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-	}
-
-	.section-header h2 {
-		font-family: 'Instrument Serif', serif;
-		font-size: 1.25rem;
-		font-weight: 400;
-		margin: 0 0 0.25rem;
-	}
-
-	.section-header p {
-		font-size: 0.8rem;
-		color: var(--fg-dim);
-		margin: 0;
-	}
-
-	.service-toggle {
 		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 1rem 0;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-		cursor: pointer;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.service-row {
+		background: rgba(255, 255, 255, 0.02);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		border-radius: 8px;
+		padding: 1rem;
 		opacity: 0;
-		animation: fadeIn 0.4s ease forwards;
+		animation: fadeIn 0.3s ease forwards;
 	}
 
 	@keyframes fadeIn {
 		from {
 			opacity: 0;
-			transform: translateX(-10px);
+			transform: translateX(-8px);
 		}
 		to {
 			opacity: 1;
@@ -179,23 +172,26 @@
 		}
 	}
 
-	.service-toggle:last-of-type {
-		border-bottom: none;
-		padding-bottom: 0;
+	.service-toggle {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		cursor: pointer;
+		margin-bottom: 0.75rem;
 	}
 
 	.service-info {
 		display: flex;
 		flex-direction: column;
-		gap: 0.25rem;
+		gap: 0.15rem;
 	}
 
 	.service-name {
 		font-size: 0.9rem;
 	}
 
-	.service-desc {
-		font-size: 0.75rem;
+	.service-transform {
+		font-size: 0.7rem;
 		color: var(--fg-dim);
 	}
 
@@ -204,53 +200,99 @@
 	}
 
 	.toggle {
+		width: 36px;
+		height: 20px;
+		background: rgba(255, 255, 255, 0.1);
+		border-radius: 10px;
 		position: relative;
-		width: 60px;
-		height: 28px;
-		background: rgba(255, 255, 255, 0.05);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		display: flex;
-		align-items: center;
-		justify-content: flex-start;
-		padding: 0 8px;
-		transition: all 0.2s;
+		transition: background 0.2s ease;
 	}
 
-	.toggle-label {
-		font-size: 0.6rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: var(--fg-dim);
-		transition: all 0.2s;
+	.toggle::after {
+		content: '';
+		position: absolute;
+		width: 14px;
+		height: 14px;
+		background: var(--fg-dim);
+		border-radius: 50%;
+		top: 3px;
+		left: 3px;
+		transition: transform 0.2s ease, background 0.2s ease;
 	}
 
 	.service-toggle input:checked + .toggle {
-		background: rgba(255, 255, 255, 0.1);
-		border-color: rgba(255, 255, 255, 0.2);
-		justify-content: flex-end;
+		background: rgba(34, 197, 94, 0.3);
 	}
 
-	.service-toggle input:checked + .toggle .toggle-label {
+	.service-toggle input:checked + .toggle::after {
+		transform: translateX(16px);
+		background: #22c55e;
+	}
+
+	.endpoint-row {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+
+	.endpoint-input {
+		flex: 1;
+		padding: 0.6rem 0.75rem;
+		background: rgba(0, 0, 0, 0.2);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		border-radius: 4px;
+		color: var(--fg);
+		font-family: 'Space Mono', monospace;
+		font-size: 0.8rem;
+		outline: none;
+		transition: border-color 0.2s ease;
+	}
+
+	.endpoint-input:focus {
+		border-color: rgba(255, 255, 255, 0.15);
+	}
+
+	.endpoint-input::placeholder {
+		color: var(--fg-dim);
+		opacity: 0.5;
+	}
+
+	.reset-btn {
+		width: 28px;
+		height: 28px;
+		padding: 0;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 4px;
+		color: var(--fg-dim);
+		font-size: 1rem;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		flex-shrink: 0;
+	}
+
+	.reset-btn:hover {
+		background: rgba(255, 255, 255, 0.1);
 		color: var(--fg);
 	}
 
 	.save-btn {
 		margin-top: 1.5rem;
-		padding: 1rem 2rem;
+		width: 100%;
+		padding: 0.875rem;
 		font-family: 'Space Mono', monospace;
 		font-size: 0.8rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		background: rgba(255, 255, 255, 0.02);
+		background: rgba(255, 255, 255, 0.05);
 		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 6px;
 		color: var(--fg);
 		cursor: pointer;
-		transition: all 0.3s ease;
+		transition: all 0.2s ease;
 	}
 
 	.save-btn:hover:not(:disabled) {
-		background: rgba(255, 255, 255, 0.04);
-		border-color: rgba(255, 255, 255, 0.2);
+		background: rgba(255, 255, 255, 0.08);
+		border-color: rgba(255, 255, 255, 0.15);
 	}
 
 	.save-btn:disabled {

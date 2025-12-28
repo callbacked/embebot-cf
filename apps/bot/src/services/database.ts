@@ -112,7 +112,7 @@ export async function getCustomEndpoints(
   env: Env,
   guildId: string
 ): Promise<Record<string, string | null>> {
-  const db = getDb(env)
+  const db = getDb(env.DATABASE_URL)
   const result = await db
     .select()
     .from(schema.serverSettings)
@@ -140,7 +140,7 @@ export async function setCustomEndpoint(
   serviceName: string,
   endpoint: string
 ): Promise<void> {
-  const db = getDb(env)
+  const db = getDb(env.DATABASE_URL)
   const endpointKey = `${serviceName}Endpoint`
 
   if (!(serviceName in endpointColumns)) {
@@ -161,7 +161,7 @@ export async function resetCustomEndpoint(
   guildId: string,
   serviceName: string
 ): Promise<void> {
-  const db = getDb(env)
+  const db = getDb(env.DATABASE_URL)
   const endpointKey = `${serviceName}Endpoint`
 
   if (!(serviceName in endpointColumns)) {

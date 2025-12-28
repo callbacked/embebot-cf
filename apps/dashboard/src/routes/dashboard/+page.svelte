@@ -7,10 +7,24 @@
 		}
 		return `https://cdn.discordapp.com/icons/${guildId}/${icon}.png`;
 	}
+
+	function getAvatarUrl(userId: string, avatar: string | null): string {
+		if (!avatar) {
+			return `https://cdn.discordapp.com/embed/avatars/${Number(BigInt(userId) >> 22n) % 6}.png`;
+		}
+		return `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png`;
+	}
 </script>
 
 <div class="page">
-	<a href="/" class="back">← home</a>
+	<div class="top-bar">
+		<a href="/" class="back">← home</a>
+		<div class="user-info">
+			<span class="username">{data.user.username}</span>
+			<img src={getAvatarUrl(data.user.id, data.user.avatar)} alt="" class="user-avatar" />
+			<a href="/auth/logout" class="logout">logout</a>
+		</div>
+	</div>
 	<p class="subtitle">select a server to configure</p>
 
 	{#if data.guilds.length === 0}
@@ -22,7 +36,12 @@
 		<div class="guilds">
 			{#each data.guilds as guild, i}
 				<a href="/dashboard/{guild.id}" class="guild-card" style="animation-delay: {i * 0.04}s">
-					<img src={getIconUrl(guild.id, guild.icon)} alt={guild.name} class="guild-icon" />
+					<div class="guild-icon-wrap">
+						<img src={getIconUrl(guild.id, guild.icon)} alt={guild.name} class="guild-icon" />
+						{#if guild.hasBot}
+							<span class="bot-badge" title="bot active"></span>
+						{/if}
+					</div>
 					<span class="guild-name">{guild.name}</span>
 					<span class="arrow">→</span>
 				</a>
@@ -38,17 +57,51 @@
 		padding-top: 2rem;
 	}
 
+	.top-bar {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 3rem;
+	}
+
 	.back {
-		display: inline-block;
 		font-size: 0.75rem;
 		color: var(--fg-dim);
 		text-decoration: none;
-		margin-bottom: 3rem;
 		transition: color 0.2s ease;
 	}
 
 	.back:hover {
 		color: var(--fg);
+	}
+
+	.user-info {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.username {
+		font-size: 0.75rem;
+		color: var(--fg-dim);
+	}
+
+	.user-avatar {
+		width: 24px;
+		height: 24px;
+		border-radius: 50%;
+	}
+
+	.logout {
+		font-size: 0.7rem;
+		color: var(--fg-dim);
+		text-decoration: none;
+		opacity: 0.6;
+		transition: opacity 0.2s ease;
+	}
+
+	.logout:hover {
+		opacity: 1;
 	}
 
 	.subtitle {
@@ -107,12 +160,27 @@
 		border-color: rgba(255, 255, 255, 0.1);
 	}
 
+	.guild-icon-wrap {
+		position: relative;
+		flex-shrink: 0;
+	}
+
 	.guild-icon {
 		width: 40px;
 		height: 40px;
 		border-radius: 10px;
 		background: rgba(255, 255, 255, 0.05);
-		flex-shrink: 0;
+	}
+
+	.bot-badge {
+		position: absolute;
+		bottom: -2px;
+		right: -2px;
+		width: 12px;
+		height: 12px;
+		background: #22c55e;
+		border-radius: 50%;
+		border: 2px solid var(--bg);
 	}
 
 	.guild-name {
