@@ -21,14 +21,23 @@
 	let saving = $state(false);
 
 	// Track endpoint values for reset functionality
-	let endpoints = $state({ ...data.endpoints });
+	let endpointOverrides = $state<Record<string, string>>({});
+
+	function getEndpoint(serviceId: keyof typeof data.defaults): string {
+		return endpointOverrides[serviceId] ?? data.endpoints[serviceId];
+	}
+
+	function setEndpoint(serviceId: keyof typeof data.defaults, value: string) {
+		endpointOverrides[serviceId] = value;
+	}
 
 	function resetEndpoint(serviceId: keyof typeof data.defaults) {
-		endpoints[serviceId] = data.defaults[serviceId];
+		endpointOverrides[serviceId] = data.defaults[serviceId];
 	}
 
 	function isCustom(serviceId: keyof typeof data.defaults): boolean {
-		return endpoints[serviceId] !== data.defaults[serviceId] && endpoints[serviceId] !== '';
+		const value = getEndpoint(serviceId);
+		return value !== data.defaults[serviceId] && value !== '';
 	}
 </script>
 
@@ -73,7 +82,8 @@
 						<input
 							type="text"
 							name="{service.id}Endpoint"
-							bind:value={endpoints[service.id]}
+							value={getEndpoint(service.id)}
+							oninput={(e) => setEndpoint(service.id, e.currentTarget.value)}
 							placeholder={data.defaults[service.id]}
 							class="endpoint-input"
 						/>
