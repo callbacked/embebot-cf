@@ -80,6 +80,9 @@ pnpm dev
 - **Durable Objects** — Persistent WebSocket connection to Discord Gateway, slash command handling, embed suppression scheduling
 - **Neon Postgres** — Per-server settings storage w/ Drizzle
 
+<img width="879" height="803" alt="image" src="https://github.com/user-attachments/assets/ba4f39b1-92b3-4475-85b5-188cf87c6ea9" />
+
+
 ## Thanks
 
 This bot wouldn't exist without these projects doing the heavy lifting:
