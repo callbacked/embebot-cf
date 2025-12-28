@@ -3,6 +3,7 @@
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/callbacked/embebot-cf)
 
 [![](https://github.com/callbacked/embebot/blob/main/assets/add.png)](https://discord.com/oauth2/authorize?client_id=1100908930458198098&permissions=27648&integration_type=0&scope=bot) 
+
 (or if you want to just add the bot to your server)
 
 A quick and silly little bot that utilizes services such as vxtwitter, vxtiktok, vxreddit, and ddinstagram in one bot to properly embed media for the user.
